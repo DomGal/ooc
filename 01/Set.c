@@ -12,11 +12,28 @@ const void * Object;
 #define	MANY	10
 #endif
 
+/*
+ * heap is static, so we extend it's lifetime and make chain it to Set.c
+ * 
+ * both set end element are containd on heap
+ */
 static int heap [MANY];
 
 void * new (const void * type, ...)
 {	int * p;							/* & heap[1..] */
 
+/*
+ * when new object is created, before it's added to a set we set it's
+ * "value" to MANY (that adress held 0 previously indicating it's
+ * free)
+ * 
+ * if newly created object is a set, it holds "value" MANY indicating
+ * it's not free (!= 0), also not holding an adress (> heap
+ * && < MANY)
+ * 
+ * we exclued index 0 (using addresses between (heap + 1) and (heap + MANY - 1)) because if it were a set than all free elements
+ * would belong to it
+ */
 	for (p = heap + 1; p < heap + MANY; ++ p)
 		if (! * p)
 			break;
@@ -28,7 +45,7 @@ void * new (const void * type, ...)
 void delete (void * _item)
 {	int * item = _item;
 
-	if (item)
+	if (item)		// so if item is not a NULL
 	{	assert(item > heap && item < heap + MANY);
 		* item = 0;
 	}
@@ -55,10 +72,15 @@ void * find (const void * _set, const void * _element)
 	const int * element = _element;
 
 	assert(set > heap && set < heap + MANY);
-	assert(* set == MANY);
+	assert(* set == MANY);	// set must contain "value" MANY
 	assert(element > heap && element < heap + MANY);
 	assert(* element);
-
+/*
+ * Element has value equal to the difference between location of
+ * the set it belongs to and the base address of the heap,
+ * so we can get address of the set by
+ * heap + element
+ * */
 	return * element == set - heap ? (void *) element : 0;
 }
 

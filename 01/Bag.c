@@ -7,6 +7,9 @@
 #include "Object.h"
 
 struct Set { unsigned count; };
+/*
+ * object can belong to a single set
+ */
 struct Object { unsigned count; struct Set * in; };
 
 static const size_t _Set = sizeof(struct Set);
@@ -15,7 +18,7 @@ static const size_t _Object = sizeof(struct Object);
 const void * Set = & _Set;
 const void * Object = & _Object;
 
-void * new (const void * type, ...)
+void * new (const void * type, ...) // ... for va_args
 {	const size_t size = * (const size_t *) type;
 	void * p = calloc(1, size);
 
